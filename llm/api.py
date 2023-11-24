@@ -1,64 +1,53 @@
-import dotenv
 import os
-from langchain.chains import ConversationalRetrievalChain, LLMChain
-from langchain.chains.qa_with_sources import load_qa_with_sources_chain
-from langchain.chat_models import ChatOpenAI
-from langchain.memory import ConversationBufferWindowMemory
-from langchain.prompts.prompt import PromptTemplate
+import dotenv
+import openai
+from typing import Literal
+from langchain.vectorstores import VectorStore
+from langchain.docstore.document import Document
 
-from .db import DB
+from .db import DB, DocumentExtractor, query_documents
 
 dotenv.load_dotenv(".env")
 os.environ["OPENAI_API_KEY"] = os.getenv("OPENAI_API_KEY")
 
-# Справка [{additional_info}]
-prompt_template = """
-Тебя зовут Вася. Ты обращаешься к собеседнику только по имени. Тебе 35. Носишь усы.
 
-{summaries}
-{chat_history}
-Алексей:
-{question}
-Вася:
+class LLM:
+
+    PROMPT = """
+Ты чатбот созданный компанией Neural Universiry.
+Ты предназначен для консультации клиентов по поводу машин марки KIA.
+Вся дополнительная информация по вопросам будет содержаться в документах. Тебе будут предоставлены "Конетнт" и "Название" документа.
 """
+    LLM = openai.AsyncOpenAI()
+    EXTRACTOR = DocumentExtractor()
 
-prompt = PromptTemplate(
-    input_variables=["chat_history", "question", "summaries"], template=prompt_template, template_format='f-string')
+    @classmethod
+    async def ask(cls, query: str, history: list[tuple[str, str]]):
+        documents = await query_documents(query)
+        prompt = [
+            {"role": "system", "content": cls.PROMPT},
+            {"role": "user", "content": cls.extract_documents_data(
+                documents, "plain")},
+        ]
 
-retriever = DB.as_retriever()
-chat = ChatOpenAI()
-memory = ConversationBufferWindowMemory(
-    k=0, input_key="question", memory_key="chat_history", output_key="answer")
-question_generator = LLMChain(
-    llm=chat, prompt=prompt, verbose=True)
+        user_message = [{"role": "user", "content": query}]
+        messages = prompt + history + user_message
+        responce = await cls.LLM.chat.completions.create(model="gpt-3.5-turbo", messages=messages)
+        return responce, documents
 
-doc_chain = load_qa_with_sources_chain(
-    llm=chat, chain_type="stuff", verbose=True, prompt=prompt)
+    @classmethod
+    def extract_documents_data(cls, documents: list[Document], mode: Literal["plain", "quotes", "xml", "json"]):
+        func = getattr(cls.EXTRACTOR, f"extract_{mode}")
+        return func(documents)
 
-conversation = ConversationalRetrievalChain(
-    memory=memory,
-    retriever=retriever,
-    question_generator=question_generator,
-    combine_docs_chain=doc_chain,
-    return_source_documents=True,
-    verbose=True)
+    @classmethod
+    def documents_to_str(cls, documents: list[Document]):
+        res = ""
+        for i, document in enumerate(documents, 1):
+            res += f"------Document {i}------\n"
+            res += f"Header 1 = {document.metadata['Header 1']}\n"
+            if header_2 := document.metadata.get("Header 2"):
+                res += f"Header 2 = {header_2}\n"
+            res += f"Content: {document.page_content}\n\n"
 
-
-# async def send_request(message: str):
-#     resp = await conversation.arun(message)
-#     print(memory.load_memory_variables({}))
-#     return resp
-
-async def send_request(message: str):
-    history = []
-    result = await conversation.acall({"question": message, "chat_history": history})
-    print(result)
-    return result["answer"]
-
-if __name__ == '__main__':
-    while True:
-        try:
-            req = input("Enter prompt:\n")
-            send_request(req)
-        except KeyboardInterrupt:
-            break
+        return res

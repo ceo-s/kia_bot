@@ -1,1 +1,1 @@
-from .api import send_request
+from .api import LLM

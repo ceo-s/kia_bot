@@ -1,6 +1,8 @@
 {
   "LLM": {
     "DB": {
+      "TEXTS_DIR": "db/text",
+      "EMBEDDINGS_DIR": "db/embeddings",
       "FILES": ["database.md"],
       "CHUNK_SIZE": 3000,
       "CHUNK_OVERLAP": 20,
