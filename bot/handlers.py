@@ -16,7 +16,6 @@ async def get_message(message: Message) -> None:
     message_history = [{"role": el[1], "content": el[0]}
                        for el in message_history]
     response, documents = await LLM.ask(message.text, message_history)
-    print(documents)
     await UserDatabase.save_message(message.from_user.id, message.text, "user")
     await UserDatabase.save_message(message.from_user.id, response.choices[0].message.content, "assistant")
 

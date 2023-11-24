@@ -8,5 +8,12 @@
       "CHUNK_OVERLAP": 20,
       "DOCUMENTS_PER_QUERY": 4
     }
+  },
+  "DB": {
+    "BASE_DIR": "db",
+    "RELATIONAL": {
+      "DATABASE_DIR": "db/relational",
+      "DATABASE_NAME": "database.sqlite"
+    }
   }
 }
