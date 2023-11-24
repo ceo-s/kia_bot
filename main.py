@@ -8,8 +8,6 @@ load_dotenv(".env")
 
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 
-print(BOT_TOKEN)
-
 dp = Dispatcher()
 register_handlers(dp)
 

@@ -2,7 +2,7 @@
   "LLM": {
     "DB": {
       "FILES": ["database.md"],
-      "CHUNK_SIZE": 1500,
+      "CHUNK_SIZE": 3000,
       "CHUNK_OVERLAP": 20,
       "DOCUMENTS_PER_QUERY": 4
     }

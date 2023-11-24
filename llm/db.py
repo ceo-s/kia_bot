@@ -22,7 +22,7 @@ EMBEDDINGS = OpenAIEmbeddings()
 
 
 def load_documents():
-    splitter = MarkdownHeaderTextSplitter([("###", "Title")])
+    splitter = MarkdownHeaderTextSplitter([("###", "source")])
     docs: list[Document] = []
     for filename in FILES:
         with open(f"db/text/{filename}", "r") as file:

@@ -15,18 +15,26 @@ os.environ["OPENAI_API_KEY"] = os.getenv("OPENAI_API_KEY")
 prompt_template = """
 Тебя зовут Вася. Ты обращаешься к собеседнику только по имени. Тебе 35. Носишь усы.
 
+{summaries}
 {chat_history}
+Алексей:
+{question}
+Вася:
 """
 
 prompt = PromptTemplate(
-    input_variables=["chat_history"], template=prompt_template, template_format='f-string')
+    input_variables=["chat_history", "question", "summaries"], template=prompt_template, template_format='f-string')
 
 retriever = DB.as_retriever()
 chat = ChatOpenAI()
-memory = ConversationBufferWindowMemory(k=3)
+memory = ConversationBufferWindowMemory(
+    k=0, input_key="question", memory_key="chat_history", output_key="answer")
 question_generator = LLMChain(
-    llm=chat, prompt=prompt)
-doc_chain = load_qa_with_sources_chain(llm=chat, chain_type="refine")
+    llm=chat, prompt=prompt, verbose=True)
+
+doc_chain = load_qa_with_sources_chain(
+    llm=chat, chain_type="stuff", verbose=True, prompt=prompt)
+
 conversation = ConversationalRetrievalChain(
     memory=memory,
     retriever=retriever,
@@ -45,7 +53,7 @@ async def send_request(message: str):
     history = []
     result = await conversation.acall({"question": message, "chat_history": history})
     print(result)
-    return result["source_documents"][0]
+    return result["answer"]
 
 if __name__ == '__main__':
     while True:
