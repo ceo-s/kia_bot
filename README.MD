@@ -1,6 +1,7 @@
 # How to start
 
-0. `git clone https://github.com/ceo-s/kia_bot.git`
-1. `pip install -r requirements.txt`
-2. `python setup.py`
-3. `python main.py`
+1. `git clone https://github.com/ceo-s/kia_bot.git`
+2. `cd kia_bot`
+3. `pip install -r requirements.txt`
+4. `python setup.py`
+5. `python main.py`
