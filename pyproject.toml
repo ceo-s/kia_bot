@@ -1,0 +1,20 @@
+[tool.poetry]
+name = "kia-bot"
+version = "0.1.0"
+description = ""
+authors = ["ceo-s <alex_s_2002@mail.ru>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = ">=3.9, <3.12"
+tiktoken = "^0.5.1"
+openai = "^1.3.5"
+faiss-cpu = "^1.7.4"
+python-dotenv = "^1.0.0"
+aiogram = "^3.1.1"
+langchain = "^0.0.340"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
