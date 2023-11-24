@@ -1,5 +1,7 @@
 database.md
 .env
 */.env
-*/__pycache__
-db/*
+*__pycache__
+db/text/*
+db/embeddings/*
+db/relational/database.sqlite
