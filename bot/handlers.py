@@ -8,20 +8,23 @@ from db import UserDatabase
 async def get_start(message: Message) -> None:
     await UserDatabase.insert_user_if_not_exist(
         message.from_user.id, message.from_user.username)
-    await message.answer("Добро пожаловать!")
+    await message.answer("""Я демонстрационный бот, созданный Университетом Искусственного Интеллекта (https://neural-university.ru/) для официального представительства Kia в России.
+
+Задавайте свои вопросы по сайту https://www.kia.ru/""")
 
 
 async def get_message(message: Message) -> None:
     message_history: list[tuple] = await UserDatabase.load_message_history(message.from_user.id)
     message_history = [{"role": el[1], "content": el[0]}
                        for el in message_history]
-    response, documents = await LLM.ask(message.text, message_history)
-    await UserDatabase.save_message(message.from_user.id, message.text, "user")
-    await UserDatabase.save_message(message.from_user.id, response.choices[0].message.content, "assistant")
+    response, documents, success = await LLM.ask(message.text, message_history)
+    if success:
+        await UserDatabase.save_message(message.from_user.id, message.text, "user")
+        await UserDatabase.save_message(message.from_user.id, response, "assistant")
 
-    response_string = f"Ответ нейросети:\n\n{response.choices[0].message.content}\n\n\n"
-    documents_string = f"Найденные документы:\n\n{LLM.documents_to_str(documents)}"
-    await message.answer(response_string + documents_string,
+    # response_string = f"Ответ нейросети:\n\n{response.choices[0].message.content}\n\n\n"
+    # documents_string = f"Найденные документы:\n\n{LLM.documents_to_str(documents)}"
+    await message.answer(response,
                          disable_web_page_preview=True)
 
 

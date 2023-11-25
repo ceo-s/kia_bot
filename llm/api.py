@@ -1,6 +1,7 @@
 import os
 import dotenv
 import openai
+import json
 from typing import Literal
 from langchain.vectorstores import VectorStore
 from langchain.docstore.document import Document
@@ -22,7 +23,7 @@ class LLM:
     EXTRACTOR = DocumentExtractor()
 
     @classmethod
-    async def ask(cls, query: str, history: list[tuple[str, str]]):
+    async def ask(cls, query: str, history: list[tuple[str, str]]) -> tuple[str, list[Document], bool]:
         documents = await query_documents(query)
         prompt = [
             {"role": "system", "content": cls.PROMPT},
@@ -32,8 +33,16 @@ class LLM:
 
         user_message = [{"role": "user", "content": query}]
         messages = prompt + history + user_message
-        responce = await cls.LLM.chat.completions.create(model="gpt-3.5-turbo", messages=messages)
-        return responce, documents
+        try:
+            responce = await cls.LLM.chat.completions.create(model="gpt-3.5-turbo", messages=messages)
+            answer = responce.choices[0].message.content
+            success = True
+        except openai.BadRequestError as error:
+            print("Token overflow")
+            answer = json.loads(error.response._content)["error"]["message"]
+            success = False
+
+        return answer, documents, success
 
     @classmethod
     def extract_documents_data(cls, documents: list[Document], mode: Literal["plain", "quotes", "xml", "json"]):
