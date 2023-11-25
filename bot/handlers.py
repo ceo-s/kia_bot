@@ -6,8 +6,6 @@ from db import UserDatabase
 
 
 async def get_start(message: Message) -> None:
-    await UserDatabase.insert_user_if_not_exist(
-        message.from_user.id, message.from_user.username)
     await message.answer("""Я демонстрационный бот, созданный Университетом Искусственного Интеллекта (https://neural-university.ru/) для официального представительства Kia в России.
 
 Задавайте свои вопросы по сайту https://www.kia.ru/""")

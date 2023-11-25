@@ -3,6 +3,7 @@ import asyncio
 from aiogram import Bot, Dispatcher, Router, types
 from dotenv import load_dotenv
 from bot.handlers import register_handlers
+from bot.middlewares import register_middlewares
 from db import UserDatabase
 
 load_dotenv(".env")
@@ -10,7 +11,9 @@ load_dotenv(".env")
 BOT_TOKEN = os.getenv("BOT_TOKEN")
 
 dp = Dispatcher()
+
 register_handlers(dp)
+register_middlewares(dp)
 
 
 async def main():
