@@ -9,4 +9,5 @@
    3. `LOGGING_BOT_TOKEN`
    4. `LOGGING_END_USERS`
 5. `python setup.py`
-6. `python main.py`
+6. Copy all text documents for embedding indexing to db/text
+7. `python main.py`
