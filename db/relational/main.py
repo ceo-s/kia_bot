@@ -23,6 +23,7 @@ class UserDatabase:
             await db.execute("CREATE TABLE if not exists users (id INTEGER PRIMARY KEY AUTOINCREMENT, tg_id TEXT UNIQUE, username TEXT);")
             await db.execute("CREATE TABLE if not exists message_history (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INT NOT NULL, message TEXT NOT NULL, role TEXT NOT NULL, FOREIGN KEY(user_id) REFERENCES users(id));")
             await db.commit()
+        logger.info("Initialized database.sqlite")
 
     @classmethod
     async def execute_dml(cls, sql: str, *parameters: Any):

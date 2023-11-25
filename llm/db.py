@@ -49,6 +49,8 @@ if os.path.exists(some_path := f"{EMBEDDINGS_DIR}/index.faiss"):
 else:
     DB = load_documents()
 
+logger.info("Loaded FAISS")
+
 
 async def query_documents(text: str):
     return await DB.asimilarity_search(text, k=DOCUMENTS_PER_QUERY)
