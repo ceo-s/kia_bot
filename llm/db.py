@@ -61,7 +61,7 @@ class DocumentExtractor:
         result = ""
         for document in documents:
             result += f"Контент:\n{document.metadata.get('Header 2', '')}\n{document.page_content}\n"
-            result += f"Название:{document.metadata['Header 1']}\n\n"
+            result += f"Название:{document.metadata.get('Header 1', 'Kia')}\n\n"
         return result
 
     @staticmethod
@@ -69,6 +69,6 @@ class DocumentExtractor:
         result = "<document>\n"
         for document in documents:
             result += f"<content>\n{document.metadata('Header 2', '')}{document.page_content}\n</content>\n"
-            result += f"<source>\n{document.metadata['Header 1']}\n</source>\n"
+            result += f"<source>\n{document.metadata.get('Header 1')}\n</source>\n"
         result += "</document>\n\n"
         return result
