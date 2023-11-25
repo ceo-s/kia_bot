@@ -8,7 +8,10 @@ from langchain.docstore.document import Document
 from langchain.text_splitter import MarkdownHeaderTextSplitter, TokenTextSplitter
 from langchain.vectorstores.faiss import FAISS
 
+from log import logger
+
 with open("conf.json") as file:
+    logger.debug("Loadin llm db config")
     config = json.load(file)["LLM"]["DB"]
 
 dotenv.load_dotenv(".env")

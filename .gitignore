@@ -5,3 +5,4 @@ database.md
 db/text/*
 db/embeddings/*
 db/relational/database.sqlite
+*/*.log

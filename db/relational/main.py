@@ -4,7 +4,10 @@ import asyncio
 import aiosqlite
 from typing import Any, Literal
 
+from log import logger
+
 with open("conf.json", "r") as file:
+    logger.debug("Loading relational db config")
     conf = json.load(file)
 
 DATABASE_DIR = conf["DB"]["RELATIONAL"]["DATABASE_DIR"]
@@ -45,15 +48,3 @@ class UserDatabase:
     async def load_message_history(cls, telegram_user_id: str):
         res = await cls.execute_dml("SELECT message, role FROM message_history WHERE user_id=(SELECT id FROM users WHERE tg_id=?) ORDER BY id DESC LIMIT 6;", telegram_user_id)
         return res
-
-
-async def main() -> None:
-    if not os.path.exists("db/relational/databese.sqlite"):
-        await UserDatabase.create()
-        # await UserDatabase.insert_user("245", "sema")
-        # await UserDatabase.save_message("245", "Hi1", "user")
-        await UserDatabase.load_message_history("245")
-
-
-if __name__ == '__main__':
-    asyncio.run(main())

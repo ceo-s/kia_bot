@@ -4,6 +4,8 @@ from aiogram.filters.command import Command
 from llm import LLM
 from db import UserDatabase
 
+from log import logger
+
 
 async def get_start(message: Message) -> None:
     await message.answer("""Я демонстрационный бот, созданный Университетом Искусственного Интеллекта (https://neural-university.ru/) для официального представительства Kia в России.

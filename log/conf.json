@@ -1,0 +1,48 @@
+{
+  "version": 1,
+  "disable_existing_loggers": false,
+
+  "formatters": {
+    "base_formatter": {
+      "format": "[{levelname}] : {message}.",
+      "style": "{"
+    },
+    "base_formatter_time": {
+      "format": "[{levelname}] : {message}. {asctime}",
+      "style": "{"
+    },
+    "trace_formatter": {
+      "format": "[{levelname}] in {pathname}::{funcName}():{lineno} : {message}.",
+      "style": "{"
+    },
+    "trace_formatter_time": {
+      "format": "[{levelname}] in {pathname}::{funcName}():{lineno} : {message}. {asctime}",
+      "style": "{"
+    }
+  },
+  "handlers": {
+    "console_handler": {
+      "()": "log.handlers.ConsoleHandler",
+      "level": "DEBUG",
+      "formatter": "trace_formatter"
+    },
+    "file_handler": {
+      "()": "log.handlers.FileHandler",
+      "level": "INFO",
+      "formatter": "trace_formatter_time",
+      "filename": "bot.log"
+    },
+    "telegram_handler": {
+      "()": "log.handlers.TelegramHandler",
+      "level": "ERROR",
+      "formatter": "trace_formatter",
+      "project_name": "Kia bot"
+    }
+  },
+  "loggers": {
+    "app_logger": {
+      "level": "DEBUG",
+      "handlers": ["console_handler", "file_handler", "telegram_handler"]
+    }
+  }
+}

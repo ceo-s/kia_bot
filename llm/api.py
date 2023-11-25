@@ -7,6 +7,7 @@ from langchain.vectorstores import VectorStore
 from langchain.docstore.document import Document
 
 from .db import DB, DocumentExtractor, query_documents
+from log import logger
 
 dotenv.load_dotenv(".env")
 os.environ["OPENAI_API_KEY"] = os.getenv("OPENAI_API_KEY")
@@ -38,8 +39,8 @@ class LLM:
             answer = responce.choices[0].message.content
             success = True
         except openai.BadRequestError as error:
-            print("Token overflow")
             answer = json.loads(error.response._content)["error"]["message"]
+            logger.error("Openai BadRequestError. " + answer)
             success = False
 
         return answer, documents, success
