@@ -68,7 +68,7 @@ class DocumentExtractor:
     def extract_xml(documents: list[Document]):
         result = "<document>\n"
         for document in documents:
-            result += f"<content>\n{document.metadata('Header 2', '')}{document.page_content}\n</content>\n"
-            result += f"<source>\n{document.metadata.get('Header 1')}\n</source>\n"
+            result += f"<content>\n{document.metadata.get('Header 2', '')}\n{document.page_content}\n</content>\n"
+            result += f"<source>\n{document.metadata.get('Header 1', 'Kia')}\n</source>\n"
         result += "</document>\n\n"
         return result
