@@ -53,7 +53,11 @@ logger.info("Loaded FAISS")
 
 
 async def query_documents(text: str):
-    return await DB.asimilarity_search(text, k=DOCUMENTS_PER_QUERY)
+    try:
+        return await DB.asimilarity_search(text, k=DOCUMENTS_PER_QUERY)
+    except Exception as ex:
+        logger.error(f"Error quering document embeddings. {ex}")
+        return []
 
 
 class DocumentExtractor:
