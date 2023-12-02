@@ -46,8 +46,10 @@ def load_documents():
 
 if os.path.exists(some_path := f"{EMBEDDINGS_DIR}/index.faiss"):
     DB = FAISS.load_local(EMBEDDINGS_DIR, EMBEDDINGS)
+    logger.debug("Loading existing embeddings")
 else:
     DB = load_documents()
+    logger.debug("Creating new embeddings")
 
 logger.info("Loaded FAISS")
 
@@ -77,4 +79,13 @@ class DocumentExtractor:
             result += f"<content>\n{document.metadata.get('Header 2', '')}\n{document.page_content}\n</content>\n"
             result += f"<source>\n{document.metadata.get('Header 1', 'Kia')}\n</source>\n"
         result += "</document>\n\n"
+        return result
+
+    @staticmethod
+    def extract_dashed(documents: list[Document]):
+        result = ""
+        for i, doc in enumerate(documents):
+            content = doc.page_content
+            response = f'\n=====================Отрывок документа №{i + 1}=====================\n{content}\n'
+            result += response
         return result
