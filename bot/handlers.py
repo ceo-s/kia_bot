@@ -18,7 +18,7 @@ async def get_start(message: Message) -> None:
 
 
 async def get_button_delete_history(message: Message):
-    await UserDatabase.delete_message_history(message.from_user.id)
+    # await UserDatabase.delete_message_history(message.from_user.id)
     await UserDatabase.delete_message_summaries(message.from_user.id)
     await message.answer("История сообщений успешно удалена!")
 
