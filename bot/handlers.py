@@ -11,9 +11,7 @@ from log import logger
 
 
 async def get_start(message: Message) -> None:
-    await message.answer("""Я демонстрационный бот, созданный Университетом Искусственного Интеллекта (https://neural-university.ru/) для официального представительства Kia в России.
-
-Задавайте свои вопросы по сайту https://www.kia.ru/""",
+    await message.answer("""Привет! Я твой личный консультант по матеше!""",
                          reply_markup=ReplyKeyboardMarkup(keyboard=[[KeyboardButton(text="Очистить историю сообщений")]], resize_keyboard=True))
 
 
