@@ -23,6 +23,7 @@ class UserDatabase:
             await db.execute("CREATE TABLE if not exists users (id INTEGER PRIMARY KEY AUTOINCREMENT, tg_id TEXT UNIQUE, username TEXT);")
             await db.execute("CREATE TABLE if not exists message_history (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INT NOT NULL, message TEXT NOT NULL, role TEXT NOT NULL, FOREIGN KEY(user_id) REFERENCES users(id));")
             await db.execute("CREATE TABLE if not exists message_summaries (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INT NOT NULL, summary TEXT, FOREIGN KEY(user_id) REFERENCES users(id));")
+            await db.execute("CREATE TABLE if not exists prompts (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INT NOT NULL UNIQUE, prompt TEXT, FOREIGN KEY(user_id) REFERENCES users(id));")
             await db.commit()
         logger.info("Initialized database.sqlite")
 
@@ -67,3 +68,13 @@ class UserDatabase:
     @classmethod
     async def delete_message_summaries(cls, telegram_user_id: str):
         await cls.execute_dml("DELETE FROM message_summaries WHERE user_id=(SELECT id FROM users WHERE tg_id=?)", telegram_user_id)
+
+    @classmethod
+    async def reset_prompt(cls, telegram_user_id: str, prompt: str):
+        # await cls.execute_dml("INSERT INTO prompts (user_id, prompt) VALUES ((SELECT id FROM users WHERE tg_id=?), ?) ON CONFLICT(name) DO UPDATE SET prompt=excluded.prompt;", telegram_user_id, prompt)
+        await cls.execute_dml("INSERT OR REPLACE INTO prompts (user_id, prompt) VALUES ((SELECT id FROM users WHERE tg_id=?), ?);", telegram_user_id, prompt)
+
+    @classmethod
+    async def get_prompt(cls, telegram_user_id: str):
+        res = await cls.execute_dml("SELECT prompt FROM prompts WHERE user_id=(SELECT id FROM users WHERE tg_id=?) ORDER BY id DESC LIMIT 1;", telegram_user_id)
+        return res[0][0] if res else ""

@@ -41,13 +41,15 @@ class LLM:
     EXTRACTOR = DocumentExtractor()
 
     @classmethod
-    async def ask(cls, query: str, summary: str) -> tuple[str, list[Document], bool]:
-        documents = await query_documents(query)
+    async def ask(cls, query: str, summary: str, prompt: str) -> tuple[str, list[Document], bool]:
+        if prompt is None:
+            prompt = cls.PROMPT
 
+        documents = await query_documents(query)
         query = f"Вот краткий обзор предыдущего диалога:\n{summary}\n\nТекущий вопрос:\n{query}"
 
         messages = [
-            {"role": "system", "content": cls.PROMPT},
+            {"role": "system", "content": prompt},
             {"role": "user",
                 "content": f"Документ с информацией для ответа пользователю:\n{cls.extract_documents_data(documents, 'plain')}\n\nВопрос клиента: \n{query}"},
             # {"role": "user", "content": f"История сообщений:\n{summary}"},

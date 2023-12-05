@@ -36,7 +36,7 @@
       "()": "log.handlers.TelegramHandler",
       "level": "ERROR",
       "formatter": "trace_formatter",
-      "project_name": "Kia bot"
+      "project_name": "Math GPT"
     }
   },
   "loggers": {
