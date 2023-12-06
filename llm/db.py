@@ -109,7 +109,7 @@ class DocumentExtractor:
     def extract_plain(documents: list[Document]):
         result = ""
         for document in documents:
-            result += f'Название:{document.metadata.get("Header 1", "Нет названия!")}\n\n'
+            result += f'Название:\n{document.metadata.get("Header 1", "Нет названия!")}\n\n'
             result += f'Контент:\n{document.metadata.get("Header 2", "")}\n{document.page_content}\n'
         return result
 
@@ -117,8 +117,8 @@ class DocumentExtractor:
     def extract_quotes(documents: list[Document]):
         result = ''
         for i, document in enumerate(documents):
-            result += f'"""Документ {i}'
-            result += f'Название:{document.metadata.get("Header 1", "Нет названия!")}\n'
+            result += f'"""Документ {i}\n'
+            result += f'Название:\n{document.metadata.get("Header 1", "Нет названия!")}\n\n'
             result += f'Контент:\n{document.metadata.get("Header 2", "")}\n{document.page_content}\n'
             result += f'"""\n'
         return result
