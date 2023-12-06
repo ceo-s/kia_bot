@@ -145,8 +145,8 @@ class DocumentExtractor:
 class EmbeddingDB:
 
     def __init__(self):
-        self.__DB = self.__initialize_db()
         self.__SPLITTER = Splitter(TEXTS_DIR)
+        self.__DB = self.__initialize_db()
 
     def __initialize_db(self) -> FAISS:
         if os.path.exists(f"{EMBEDDINGS_DIR}/index.faiss"):
