@@ -9,7 +9,7 @@ from log import logger
 
 load_dotenv(".env")
 
-BOT_TOKEN = os.getenv("BOT_TOKEN")
+BOT_TOKEN = os.getenv("BOT_TOKEN", "")
 
 dp = Dispatcher()
 

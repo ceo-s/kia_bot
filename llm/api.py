@@ -6,11 +6,11 @@ from typing import Literal
 from langchain.vectorstores import VectorStore
 from langchain.docstore.document import Document
 
-from .db import DB, DocumentExtractor, query_documents
+from .db import DocumentExtractor, EMBEDDINGS_DATABASE
 from log import logger
 
 dotenv.load_dotenv(".env")
-os.environ["OPENAI_API_KEY"] = os.getenv("OPENAI_API_KEY")
+os.environ["OPENAI_API_KEY"] = os.getenv("OPENAI_API_KEY", "")
 
 
 MODEL = "gpt-3.5-turbo"
@@ -22,23 +22,34 @@ class LLM:
     PROMPT = """
 Ты - личный консультант по программированию и высшей математике.
 Твоя задача - отвечать на вопросы клиента четко и ясно.
-Никогда не ври. Если что-то не знаешь или не понимаешь, честно сообщи об этом.
-Следуй указаниям клиента, но отстаивай свою точку зрения если он не прав.
-Ты должен давать как можно больше полезных и подробных материалов в ответ на каждый вопрос.
+Вы с клиентом в хороших отношениях, поэтому общайся без наигранной вежливости, просто по дружески.
 
 Если клиент не понимает материал, старайся объяснить его проще и дать интуитивное понимание с примерами.
 Если клиент просит подробнее, старайся объяснить всё в мельчайших деталях.
+Следуй указаниям клиента, но отстаивай свою точку зрения если он не прав.
+Никогда не ври. Если что-то не знаешь или не понимаешь, честно сообщи об этом.
+Ты должен давать как можно больше полезных и подробных материалов в ответ на каждый вопрос.
+Если требуется написать блок кода или формулу латекс, то пиши их в Markdown type блоке из тройных ` с указанием языка прогрмаммирования.
+
+Тебе будут предоставлены документы с дополнительной информацией.
+Тебе не обязательно на них ориентироваться, но в случае необходимсти ты всегда можешь на них положиться.
+В них могут содержаться материалы по вышмату, документация к програмному обеспечению и много другиъ полезных вещей.
+
+Документы будут перечислены перед вопросом.
+Каждый документ будет заключён в тройные кавычки (\"\"\"Документ № \"\"\"), и в каждом будет название (либо фраза "Нет названия!") документа и его контент.
+
+Так же тебе будет представлена история сообщений в виде краткого пересказа. Ты можешь использовать эту информацию чтобы чётче следовать курсу диалога.
 """
 
     SUMMARIZATION_PROMPT = """
 Ты - суммаризатор истории сообщений чат-бота и клиента.
 Тебе будут предоставлены: краткое изложение прошлых сообщений и два последних сообщения от клиента и чат-бота в разделе "История" и "Сообщения" соответственно.
-Твоя задача составить максимально подробное, но краткое (не больше 400 слов) изложение истории сообщений.
+Твоя задача составить максимально подробное, но достатчно краткое (не больше 800 слов) изложение истории сообщений.
 Не вдавайся в подробности отдельных сообщений, только тезисно выделяй затронутые темы.
-
-История:
-{summary}
+Если есть более важные темы или отдельные интересные моменты, удели им больше внимания.
+Обязательно обрати больше внимания на последние сообщения. Явно укажи что клиент попросил в последнем сообщении, и что ему ответили.
 """
+
     LLM = openai.AsyncOpenAI()
     EXTRACTOR = DocumentExtractor()
 
@@ -47,25 +58,22 @@ class LLM:
         if prompt is None:
             prompt = cls.PROMPT
 
-        documents = await query_documents(query)
-        query = f"Вот краткий обзор предыдущего диалога:\n{summary}\n\nТекущий вопрос:\n{query}"
+        documents = await EMBEDDINGS_DATABASE.query_documents(query)
+        documents_text = cls.extract_documents_data(documents, 'quotes')
+        content = f"Документы:\n{documents_text}\nИстория диалога:\n{summary}\n\nВопрос клиента:\n{query}"
 
         messages = [
             {"role": "system", "content": prompt},
-            {"role": "user",
-                "content": f"Документ с информацией для ответа пользователю:\n{cls.extract_documents_data(documents, 'plain')}\n\nВопрос клиента: \n{query}"},
-            # {"role": "user", "content": f"История сообщений:\n{summary}"},
-            # {"role": "user", "content": query},
+            {"role": "user",   "content": content},
         ]
 
-        logger.debug(
-            f"Документ с информацией для ответа пользователю: {cls.extract_documents_data(documents, 'dashed')}\n\nВопрос клиента: \n{query}")
+        logger.debug(content)
 
         answer, success = await cls.__make_request(messages)
         return answer, documents, success
 
     @classmethod
-    def extract_documents_data(cls, documents: list[Document], mode: Literal["plain", "quotes", "dashed", "xml", "json"]):
+    def extract_documents_data(cls, documents: list[Document], mode: Literal["plain", "quotes", "dashed", "xml", "json", "quotes"]):
         func = getattr(cls.EXTRACTOR, f"extract_{mode}")
         return func(documents)
 
@@ -83,9 +91,9 @@ class LLM:
 
     @classmethod
     async def summarize_history(cls, summary: str, user_message: str, bot_message: str) -> tuple[str, bool]:
-        prompt = cls.SUMMARIZATION_PROMPT.format(summary=summary)
         messages = [
-            {"role": "system", "content": prompt},
+            {"role": "system", "content": cls.SUMMARIZATION_PROMPT},
+            {"role": "user", "content": f"История:\n{summary}"},
             {"role": "user", "content": f"Сообщения:\nКлиент - \"{user_message}\"\nЧат-бот - \"{bot_message}\""},
         ]
 

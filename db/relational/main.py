@@ -36,45 +36,45 @@ class UserDatabase:
             return await cursor.fetchall()
 
     @classmethod
-    async def insert_user_if_not_exist(cls, telegram_user_id: str, telegram_username: str):
+    async def insert_user_if_not_exist(cls, telegram_user_id: str | int | int, telegram_username: str):
         await cls.execute_dml("INSERT OR IGNORE INTO users (tg_id, username) VALUES (?, ?);", telegram_user_id, telegram_username)
 
     @classmethod
-    async def delete_user(cls, telegram_user_id: str):
+    async def delete_user(cls, telegram_user_id: str | int):
         await cls.execute_dml("DELETE FROM users WHERE tg_id=?;", telegram_user_id)
 
     @classmethod
-    async def save_message(cls, telegram_user_id: str, message: str, role: Literal["user", "assistant", "system"]):
+    async def save_message(cls, telegram_user_id: str | int, message: str, role: Literal["user", "assistant", "system"]):
         await cls.execute_dml("INSERT INTO message_history (user_id, message, role) VALUES ((SELECT id FROM users WHERE tg_id=?), ?, ?);", telegram_user_id, message, role)
 
     @classmethod
-    async def load_message_history(cls, telegram_user_id: str):
+    async def load_message_history(cls, telegram_user_id: str | int):
         res = await cls.execute_dml("SELECT message, role FROM message_history WHERE user_id=(SELECT id FROM users WHERE tg_id=?) ORDER BY id DESC LIMIT 6;", telegram_user_id)
         return res
 
     @classmethod
-    async def delete_message_history(cls, telegram_user_id: str):
+    async def delete_message_history(cls, telegram_user_id: str | int):
         await cls.execute_dml("DELETE FROM message_history WHERE user_id=(SELECT id FROM users WHERE tg_id=?)", telegram_user_id)
 
     @classmethod
-    async def save_summary(cls, telegram_user_id: str, summary: str):
+    async def save_summary(cls, telegram_user_id: str | int, summary: str):
         await cls.execute_dml("INSERT INTO message_summaries (user_id, summary) VALUES ((SELECT id FROM users WHERE tg_id=?), ?);", telegram_user_id, summary)
 
     @classmethod
-    async def get_summary(cls, telegram_user_id: str):
+    async def get_summary(cls, telegram_user_id: str | int):
         res = await cls.execute_dml("SELECT summary FROM message_summaries WHERE user_id=(SELECT id FROM users WHERE tg_id=?) ORDER BY id DESC LIMIT 1;", telegram_user_id)
         return res[0][0] if res else ""
 
     @classmethod
-    async def delete_message_summaries(cls, telegram_user_id: str):
+    async def delete_message_summaries(cls, telegram_user_id: str | int):
         await cls.execute_dml("DELETE FROM message_summaries WHERE user_id=(SELECT id FROM users WHERE tg_id=?)", telegram_user_id)
 
     @classmethod
-    async def reset_prompt(cls, telegram_user_id: str, prompt: str):
+    async def reset_prompt(cls, telegram_user_id: str | int, prompt: str):
         # await cls.execute_dml("INSERT INTO prompts (user_id, prompt) VALUES ((SELECT id FROM users WHERE tg_id=?), ?) ON CONFLICT(name) DO UPDATE SET prompt=excluded.prompt;", telegram_user_id, prompt)
         await cls.execute_dml("INSERT OR REPLACE INTO prompts (user_id, prompt) VALUES ((SELECT id FROM users WHERE tg_id=?), ?);", telegram_user_id, prompt)
 
     @classmethod
-    async def get_prompt(cls, telegram_user_id: str):
+    async def get_prompt(cls, telegram_user_id: str | int):
         res = await cls.execute_dml("SELECT prompt FROM prompts WHERE user_id=(SELECT id FROM users WHERE tg_id=?) ORDER BY id DESC LIMIT 1;", telegram_user_id)
         return res[0][0] if res else ""
